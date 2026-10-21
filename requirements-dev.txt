@@ -1,0 +1,7 @@
+# Optional Python-only development tools. Not shipped or downloaded by Candy.
+Pillow>=11,<15
+tinycss2>=1.4,<2
+
+# Only to regenerate bundled animated avatar assets (not needed to build/run Candy).
+numpy>=2,<3
+opencv-python-headless>=4.10,<5

@@ -1,0 +1,68 @@
+{
+  "name": "candy-local",
+  "version": "1.0.0",
+  "description": "An offline AI chatmate for Windows 11. Internet is used only for required setup downloads.",
+  "main": "src/main.js",
+  "author": "KnightWin",
+  "license": "GPL-3.0-only",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test tests/*.test.js",
+    "build:win": "electron-builder --win nsis portable --x64",
+    "preview": "node scripts/preview.js",
+    "test:offline": "node scripts/offline-smoke.js",
+    "release:prepare": "node scripts/prepare-release.cjs",
+    "release:verify": "node scripts/verify-release.cjs"
+  },
+  "dependencies": {
+    "extract-zip": "2.0.1"
+  },
+  "devDependencies": {
+    "electron": "44.9.1",
+    "electron-builder": "26.15.3",
+    "resedit": "3.1.0",
+    "yazl": "3.3.1"
+  },
+  "build": {
+    "appId": "local.candy.companion",
+    "productName": "Candy",
+    "asar": true,
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "src/**/*",
+      "renderer/**/*",
+      "assets/**/*",
+      "package.json",
+      "LICENSE",
+      "THIRD-PARTY.md",
+      "NOTICE"
+    ],
+    "win": {
+      "icon": "assets/candy.ico",
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "signAndEditExecutable": true,
+      "signExecutable": false
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "artifactName": "Candy-Setup-${version}-${arch}.${ext}"
+    },
+    "portable": {
+      "artifactName": "Candy-Portable-${version}-${arch}.${ext}"
+    },
+    "copyright": "Copyright © 2026 KnightWin",
+    "electronLanguages": [
+      "en-US"
+    ]
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}

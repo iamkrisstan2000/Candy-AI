@@ -1,0 +1,18 @@
+Candy — offline AI chatmate for Windows 11
+Copyright (C) 2026 KnightWin
+SPDX-License-Identifier: GPL-3.0-only
+
+Candy's own application code, original interface artwork and original chat
+sound recipes are licensed under the GNU General Public License, version 3
+only. The complete license is in LICENSE. Candy is distributed WITHOUT ANY
+WARRANTY, including merchantability or fitness for a particular purpose.
+
+The corresponding Candy source and build scripts are supplied as
+Candy-source-1.0.0.zip alongside the official application release. Publish
+that source archive with the binary, not as a private or inaccessible file.
+No activation key or signing key is required to build or run modified Candy.
+
+Electron and other third-party dependencies, and separately downloaded AI
+models/runtimes, retain their own licenses. See THIRD-PARTY.md. This notice
+does not relicense those components. Historical pre-release versions retain
+the licenses under which they were originally distributed.
