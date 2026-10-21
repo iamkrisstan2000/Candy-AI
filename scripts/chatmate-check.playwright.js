@@ -1,0 +1,42 @@
+// UI tests only, using a labelled local Markdown fixture, not generated model output.
+async (page) => {
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ const check=(ok,msg)=>{if(!ok)throw new Error(msg);};
+ check(await page.locator('.sidebar-brand,.sidebar [data-app-icon]').count()===0,'Sidebar branding remains');
+ check(await page.locator('.rail-info,.profile-caption,.profile-line,#edit-persona,#persona-label').count()===0,'Right rail copy/icon remains');
+ check(await page.locator('.title-sep').count()===0,'Titlebar separator remains');
+ check(await page.locator('.app-title').count()===0,'Titlebar wordmark remains');
+ check(await page.locator('.titlebar .title-tagline').count()===0,'Titlebar tagline remains');
+ check(await page.locator('.titlebar #mood-status').count()===0,'Mood remains in titlebar');
+ check(await page.locator('.chat-header .contact-info #mood-status').count()===1,'Mood not beneath Candy in chat header');
+ check(await page.locator('#engine-status').count()===0,'Old engine status text remains');
+ const initialMood=await page.locator('#mood-status').textContent();check(initialMood.length>0,'Mood status empty');
+ await page.evaluate(()=>{for(const e of [{status:'loading',note:'Loading test engine'},{status:'ready',backend:'vulkan'},{status:'error',note:'TEST ONLY engine error'},{status:'idle'}])setEngineStatus(e);});
+ check(await page.locator('#mood-status').textContent()===initialMood,'Engine event overwrote mood');
+ check(await page.locator('.titlebar #search').count()===1&&await page.locator('.titlebar .title-tagline').count()===0,'Engine event changed titlebar search');
+ await page.evaluate(()=>setEngineStatus({status:'ready',backend:'vulkan'}));
+ check((await page.locator('#engine-dot').getAttribute('title')).includes('vulkan'),'Engine details missing from tooltip');
+ await page.getByRole('button',{name:'Settings & personalization',exact:true}).click();
+ check(await page.locator('#accent-status,#accent-note,.scene-status').count()===0,'Scene accent captions remain');
+ check(await page.locator('#bubble-style').inputValue()==='outlined','Fresh bubble default must be outlined');
+ await page.locator('#humor').evaluate(el=>{el.value='0';el.dispatchEvent(new Event('input',{bubbles:true}));});
+ check(!await page.locator('#mood-status').textContent().then(s=>/\p{Extended_Pictographic}/u.test(s)),'Serious status contains an emoji');
+ await page.locator('#humor').evaluate(el=>{el.value='100';el.dispatchEvent(new Event('input',{bubbles:true}));});
+ const emoji=await page.evaluate(()=>{const random=Math.random;try{Math.random=()=>0;refreshMood(true);return moodChoice.emoji;}finally{Math.random=random;}});check(emoji.length>0,'Lively mood did not support a matching emoji');
+ const before=await page.locator('#mood-status').textContent();await page.evaluate(()=>refreshMood(true));check(await page.locator('#mood-status').textContent()!==before,'Forced rotation repeated the same line');
+ await page.locator('#bubble-style').selectOption('solid');await page.reload();await page.getByRole('button',{name:'Settings & personalization',exact:true}).click();
+ check(await page.locator('#bubble-style').inputValue()==='solid','Solid preference not persisted');
+ await page.locator('#bubble-style').selectOption('outlined');
+ await page.evaluate(()=>{const t=new Date().toISOString();localStorage.setItem('candy-preview-chats',JSON.stringify([{id:'style-fixture',title:'TEST ONLY style fixture',created:t,messages:[{role:'user',content:'TEST ONLY bubble/Markdown checks',time:t},{role:'assistant',content:'**One clear answer.** A little inline `code`.\n\n```js\nconst value = 1;\n```',time:t}]}]));});
+ await page.reload();
+ const outlined=await page.locator('.message.assistant .message-body').evaluate(e=>({fill:getComputedStyle(e).backgroundColor,border:getComputedStyle(e).borderTopColor,color:getComputedStyle(e).color}));
+ await page.getByRole('button',{name:'Settings & personalization',exact:true}).click();await page.locator('#bubble-style').selectOption('solid');await page.getByRole('button',{name:'Close settings',exact:true}).click();
+ const solid=await page.locator('.message.assistant .message-body').evaluate(e=>({fill:getComputedStyle(e).backgroundColor,border:getComputedStyle(e).borderTopColor,color:getComputedStyle(e).color}));
+ check(solid.fill!==outlined.fill,'Solid and outlined look identical');check(solid.fill===solid.border,'Solid bubble is not filled with its accent');check(solid.color!==outlined.color,'Solid foreground did not adapt for contrast');
+ check(await page.locator('.message.assistant code').count()===2,'Markdown/code fixture not rendered');
+ await page.getByRole('button',{name:'Settings & personalization',exact:true}).click();await page.getByRole('tab',{name:'Device & data',exact:true}).click();await page.locator('#open-reset').click();await page.locator('#reset-confirm').fill('DELETE');await page.locator('#confirm-reset').click();
+ await page.getByRole('heading',{name:'Preview data cleared.',exact:true}).waitFor();check(await page.evaluate(()=>moodTimer===null),'Reset left a status timer active');
+ await page.getByRole('button',{name:'Reopen design preview',exact:true}).click();await page.getByRole('textbox',{name:'Message Candy'}).waitFor();
+ check(errors.length===0,'Page errors: '+errors.join('; '));
+ return {moodInChatHeader:true,centeredTitlebarSearch:true,engineCannotOverwriteMood:true,pageErrors:errors.length,railClean:true,titlebarClean:true,sidebarBrandingRemoved:true,humorAwareMood:true,forcedRotation:true,bubbleDefaultOutlined:true,solidPersistence:true,distinctBubbleFills:true,resetClearsMoodTimer:true,noRealInferenceUsed:true};
+}

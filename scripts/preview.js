@@ -1,0 +1,4 @@
+// Static design preview; no AI server and no connection to desktop storage.
+const http=require('node:http'),fs=require('node:fs'),path=require('node:path');
+const root=path.resolve(__dirname,'../renderer');const types={'.html':'text/html','.css':'text/css','.js':'text/javascript','.svg':'image/svg+xml','.webp':'image/webp'};
+http.createServer((req,res)=>{const url=new URL(req.url,'http://local');const file=path.resolve(root,'.'+(url.pathname==='/'?'/index.html':decodeURIComponent(url.pathname)));if(!file.startsWith(root+path.sep)){res.writeHead(403);return res.end();}fs.readFile(file,(e,b)=>{if(e){res.writeHead(404);res.end('Not found');return;}res.writeHead(200,{'Content-Type':types[path.extname(file)]||'application/octet-stream','X-Content-Type-Options':'nosniff','Cache-Control':'no-cache'});res.end(b);});}).listen(3000,'0.0.0.0',()=>console.log('Candy design preview on port 3000 — desktop-only AI is not simulated.'));

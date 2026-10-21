@@ -1,0 +1,33 @@
+// TEST ONLY: native IPC/disk/UI conversation lifecycle; no real model/personal profile.
+const {app}=require('electron'),fs=require('node:fs'),path=require('node:path'),os=require('node:os'),assert=require('node:assert/strict');
+app.commandLine.appendSwitch('disable-gpu');const profile=fs.mkdtempSync(path.join(os.tmpdir(),'candy-conversations-test-'));app.setPath('appData',profile);const root=path.join(profile,'CandyLocal');fs.mkdirSync(root,{recursive:true});
+const make=(id)=>({id,title:'TEST ONLY '+id,created:new Date().toISOString(),messages:[]});
+fs.writeFileSync(path.join(root,'chats.json'),JSON.stringify(Array.from({length:12},(_,i)=>make('legacy-'+i))));
+fs.writeFileSync(path.join(root,'installation.json'),JSON.stringify({modelName:'TEST ONLY',backend:'cpu',modelFile:'unused'}));
+require('../src/hardware').inspect=async()=>({cpu:'TEST ONLY',ramGB:8,gpus:[]});
+const received=[];const {Engine}=require('../src/engine');Engine.prototype.start=async()=>{};Engine.prototype.chat=async function(messages){received.push(messages.map(m=>({...m})));return {text:'TEST ONLY complete '+messages.at(-1).content,stopped:false};};
+const timer=setTimeout(()=>{console.error('FAIL: conversation smoke timed out');app.exit(1);},30000);
+app.on('browser-window-created',(_,w)=>w.webContents.once('did-finish-load',async()=>{try{
+ const js=s=>w.webContents.executeJavaScript('(async()=>{'+s+'})()');const load=()=>js('return window.candy.load();');const disk=()=>JSON.parse(fs.readFileSync(path.join(root,'chats.json'),'utf8'));
+ const reload=async()=>{await new Promise(r=>{w.webContents.once('did-finish-load',r);w.webContents.reload();});await load();};
+ assert.equal((await load()).chats.length,12);assert.equal(await js('return document.querySelector("#new-chat").disabled;'),true);
+ let legacy=(await load()).chats;await js('await window.candy.saveChats('+JSON.stringify(legacy.slice(1))+');');assert.equal(disk().length,11);
+ const rejectedLegacy=await js('try{const d=await window.candy.load();await window.candy.saveChats([...d.chats,{id:"new-id",title:"TEST",messages:[]}]);return false;}catch{return true;}');assert.equal(rejectedLegacy,true);assert.equal(disk().length,11);
+ await js('await window.candy.saveChats([]);');await reload();assert.equal((await load()).chats.length,0);assert.equal(await js('return document.querySelectorAll(".chat-item").length;'),0);
+ for(let i=0;i<10;i++)await js('await newConversation();');assert.equal(disk().length,10);assert.equal(new Set(disk().map(c=>c.id)).size,10);
+ const ids=disk().map(c=>c.id),rejected=await js('try{const d=await window.candy.load();await window.candy.saveChats([...d.chats,{id:"eleven",title:"TEST",messages:[]}]);return false;}catch{return true;}');assert.equal(rejected,true);assert.deepEqual(disk().map(c=>c.id),ids);
+ await reload();assert.equal(await js('return document.querySelectorAll(".chat-item").length;'),10);
+ console.log('PASS: native IPC/disk preserves legacy >10, enforces 10 new threads, unique empty chats, reload persistence; no silent eviction.');
+ const pair=['ALPHA','BETA'].map(id=>({...make(id),messages:[{role:'user',content:'SCOPE_'+id,time:new Date().toISOString()}]}));await js('await window.candy.saveChats('+JSON.stringify(pair)+');');
+ await js('await window.candy.chat("ALPHA");');assert.equal(disk()[0].messages.length,2);assert.equal(disk()[1].messages.length,1);await js('await window.candy.chat("BETA");');assert.deepEqual(received.map(x=>x.map(m=>m.content)),[['SCOPE_ALPHA'],['SCOPE_BETA']]);assert.equal(disk()[1].messages.length,2);
+ await reload();const before=await js('document.querySelector("#message-input").value="NATIVE TEST draft";return {activeId,html:document.querySelector("#messages").innerHTML};');assert.equal(before.activeId,'ALPHA');
+ await js('document.querySelector("[data-menu-chat=BETA]").click();document.querySelector("#delete-chat").click();if(deleteTargetId!=="BETA"||!document.querySelector("#delete-dialog p").textContent.includes("BETA"))throw new Error("Wrong sidebar menu target");await deleteConversation(deleteTargetId);');
+ assert.deepEqual(disk().map(c=>c.id),['ALPHA']);assert.deepEqual(await js('return {activeId,html:document.querySelector("#messages").innerHTML};'),before);assert.equal(await js('return document.querySelector("#message-input").value;'),'NATIVE TEST draft');
+ console.log('PASS: native row menu deletes non-active BETA through IPC/disk, preserving ALPHA, its history DOM and unsent draft.');assert.equal(disk().length,1);await js('await deleteConversation();');assert.deepEqual(disk(),[]);await reload();assert.equal(await js('return document.querySelectorAll(".chat-item").length;'),0);assert.deepEqual((await load()).chats,[]);
+ console.log('PASS: per-thread model input isolation using TEST-ONLY inference; deleting the final thread persists zero, including after reload.');
+ await js('saveSetting("sidebarCollapsed",true);await settingsSerial;');assert.equal(JSON.parse(fs.readFileSync(path.join(root,'settings.json'))).sidebarCollapsed,true);await reload();assert.equal(await js('return document.querySelector("#toggle-sidebar").getAttribute("aria-expanded");'),'false');
+ await js('saveSetting("theme","dark");await settingsSerial;');assert.equal(require('electron').nativeTheme.themeSource,'dark');assert.equal(await js('return document.querySelector("#change-scene")===null;'),true);
+ console.log('PASS: native sidebar/settings persistence, native theme-source update and removed banner action. Material:',(await load()).windowMaterial);
+ clearTimeout(timer);await w.webContents.session.clearStorageData();app.exit(0);
+ }catch(e){console.error('FAIL:',e);clearTimeout(timer);app.exit(1);}}));
+require('../src/main');
