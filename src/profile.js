@@ -1,0 +1,7 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path');const {imageInfo}=require('../renderer/avatars');
+function avatarFile(root){return path.join(root,'profile','user.png');}
+function customAvatar(root){try{const file=avatarFile(root);const stat=fs.statSync(file);if(stat.size>1024**2)return null;const b=fs.readFileSync(file);if(imageInfo(b).format!=='png')return null;return 'data:image/png;base64,'+b.toString('base64');}catch{return null;}}
+function importAvatar(root,buffer,nativeImage){imageInfo(buffer);const image=nativeImage.createFromBuffer(buffer);if(image.isEmpty())throw new Error('Windows could not decode that image. Choose another PNG or JPEG.');const {width,height}=image.getSize();if(width>4096||height>4096)throw new Error('Image is too large.');const size=Math.min(width,height);const cropped=image.crop({x:Math.floor((width-size)/2),y:Math.floor((height-size)/2),width:size,height:size}).resize({width:256,height:256,quality:'best'});const output=cropped.toPNG();if(output.length>1024**2)throw new Error('The resized avatar is too large.');const file=avatarFile(root);fs.mkdirSync(path.dirname(file),{recursive:true});fs.writeFileSync(file+'.tmp',output,{mode:0o600});fs.renameSync(file+'.tmp',file);return 'data:image/png;base64,'+output.toString('base64');}
+function removeAvatar(root){fs.rmSync(avatarFile(root),{force:true});}
+module.exports={avatarFile,customAvatar,importAvatar,removeAvatar};

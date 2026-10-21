@@ -1,0 +1,22 @@
+{
+  "version": "b11755",
+  "assets": [
+    {
+      "name": "llama-b11755-bin-win-cpu-x64.zip",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11755/llama-b11755-bin-win-cpu-x64.zip",
+      "sha256": "450b11d263c34e521ef0800bce69e3262d6657546fdedbd6f3005769f21a2568",
+      "size": 23959268
+    },
+    {
+      "name": "llama-b11755-bin-win-vulkan-x64.zip",
+      "url": "https://github.com/ggml-org/llama.cpp/releases/download/b11755/llama-b11755-bin-win-vulkan-x64.zip",
+      "sha256": "d7f2e1052fa32932f89a04ad507c4c4bedbf02436681871bec3db41e40b14ab8",
+      "size": 36751534
+    }
+  ],
+  "vclibs": {
+    "url": "https://download.microsoft.com/download/4/7/c/47c6134b-d61f-4024-83bd-b9c9ea951c25/Microsoft.VCLibs.x64.14.00.Desktop.appx",
+    "size": 6764349,
+    "sha256": "b56a9101f706f9d95f815f5b7fa6efbac972e86573d378b96a07cff5540c5961"
+  }
+}
