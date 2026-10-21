@@ -7,6 +7,19 @@
 
 Chats run on your own PC. No cloud conversations, accounts, advertisements, analytics, telemetry or automatic update checks. Once setup is complete, disconnect from the internet and keep chatting. Candy's private loopback connection to its local AI engine is **not** an internet connection.
 
+## Screenshots 
+
+<img width="1919" height="1079" alt="Screenshot 2026-10-21 155855" src="https://github.com/user-attachments/assets/9d0b297d-c356-4ac0-9652-80b4a183c431" />
+<img width="1919" height="1079" alt="Screenshot 2026-10-21 155828" src="https://github.com/user-attachments/assets/0faaf15a-bcad-4b79-b95c-0b80e1f7dd85" />
+<img width="1919" height="1079" alt="Screenshot 2026-10-21 155755" src="https://github.com/user-attachments/assets/827d9e98-a3a3-4757-ba8a-495b03d7efbd" />
+<img width="1919" height="1079" alt="Screenshot 2026-10-21 155721" src="https://github.com/user-attachments/assets/7e82dc2b-3912-4b74-b916-5bf98a451741" />
+<img width="1919" height="1079" alt="Screenshot 2026-10-21 155713" src="https://github.com/user-attachments/assets/b170cf8e-321d-4d35-b01a-f4faa266eac0" />
+<img width="1919" height="1079" alt="Screenshot 2026-10-21 155706" src="https://github.com/user-attachments/assets/97d941c6-f78c-4bd7-aecf-09fa82f21c8f" />
+<img width="1919" height="1079" alt="Screenshot 2026-10-21 155659" src="https://github.com/user-attachments/assets/44d35685-17e2-4a3c-8c7a-5eb37d89e907" />
+<img width="1919" height="1079" alt="Screenshot 2026-10-21 155640" src="https://github.com/user-attachments/assets/d156e7ac-e432-44f5-80e5-50a4eb5743ab" />
+<img width="1919" height="1079" alt="Screenshot 2026-10-21 155633" src="https://github.com/user-attachments/assets/2e0644cd-9a48-4fe1-9017-5a95c6a34acb" />
+
+
 ![Candy desktop interface](docs/candy.png)
 
 ## Get started
@@ -69,6 +82,10 @@ npm run release:verify
 ```
 
 Or run **Build-Candy.cmd** on Windows. Outputs are in `release/`. Building modified Candy requires no activation key or private signing key. Models are downloaded by Setup Candy, not bundled into the initial EXE. See [maintenance/build notes](MAINTENANCE.md) for optional regression tests and the GitHub release workflow.
+
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/N7D7292WUD)
+
 
 ## License
 
